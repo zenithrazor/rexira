@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rexira — Enterprise Domain Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+
+/* ── Variables ── */
+:root{
+  --bg:        #0a0508;
+  --bg2:       #0e080b;
+  --bg3:       #130b0e;
+  --surface:   rgba(18,10,13,0.9);
+  --surface2:  rgba(25,14,18,0.95);
+  --red:       #e31b23;
+  --red-h:     #c4161d;
+  --red-dim:   rgba(227,27,35,0.12);
+  --red-glow:  rgba(227,27,35,0.25);
+  --red-glow2: rgba(227,27,35,0.08);
+  --text:      #f2eaeb;
+  --text-2:    #c4aeb1;
+  --text-3:    #7a5f63;
+  --text-4:    #3d2a2d;
+  --border:    rgba(227,27,35,0.12);
+  --border-2:  rgba(227,27,35,0.3);
+  --border-3:  rgba(227,27,35,0.5);
+  --ff-d:      'Syne', sans-serif;
+  --ff-b:      'DM Sans', sans-serif;
+  --ease:      cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Base ── */
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--ff-b);
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* Ambient background */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(227,27,35,0.14) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 85% 85%, rgba(227,27,35,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 30% 30% at 10% 60%, rgba(180,10,20,0.05) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Noise overlay */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:.4;
+  pointer-events:none;
+  z-index:0;
+}
+
+body > *{position:relative;z-index:1}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:rgba(227,27,35,0.3);border-radius:99px}
+
+/* ── Utils ── */
+.container{max-width:1180px;margin:0 auto;padding:0 28px}
+a{color:var(--red);text-decoration:none;transition:color .2s}
+a:hover{color:#ff4a50}
+img{max-width:100%}
+
+/* ── NAV ── */
+.nav{
+  position:sticky;top:0;z-index:200;
+  padding:0 28px;
+  background:rgba(10,5,8,0.82);
+  backdrop-filter:blur(20px) saturate(1.4);
+  border-bottom:1px solid var(--border);
+}
+.nav-inner{
+  max-width:1180px;margin:0 auto;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  height:62px;gap:24px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--ff-d);font-size:1.35rem;font-weight:800;
+  color:var(--text);letter-spacing:-0.04em;
+}
+.logo-mark{
+  width:30px;height:30px;
+  background:var(--red);
+  border-radius:7px;
+  display:grid;place-items:center;
+  box-shadow:0 0 16px rgba(227,27,35,0.5);
+  flex-shrink:0;
+}
+.logo-mark svg{display:block}
+.logo em{color:var(--red);font-style:normal}
+
+.nav-links{
+  display:flex;align-items:center;gap:2px;list-style:none;
+}
+.nav-links a{
+  color:var(--text-3);font-size:.875rem;font-weight:500;
+  padding:6px 13px;border-radius:7px;
+  transition:all .2s var(--ease);
+}
+.nav-links a:hover{color:var(--text);background:var(--red-dim)}
+
+.nav-cta{display:flex;align-items:center;gap:10px}
+
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:10px 22px;border-radius:9px;
+  font-family:var(--ff-d);font-weight:600;font-size:.875rem;
+  cursor:pointer;border:none;
+  transition:all .22s var(--ease);
+  white-space:nowrap;text-decoration:none;
+}
+.btn-primary{
+  background:var(--red);color:#fff;
+  box-shadow:0 4px 20px rgba(227,27,35,0.35),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.btn-primary:hover{background:var(--red-h);color:#fff;transform:translateY(-1px);box-shadow:0 6px 28px rgba(227,27,35,.5)}
+.btn-ghost{background:transparent;color:var(--text-2);padding:10px 16px}
+.btn-ghost:hover{color:var(--text);background:var(--red-dim)}
+.btn-outline{
+  background:transparent;color:var(--text-2);
+  border:1px solid var(--border-2);
+}
+.btn-outline:hover{border-color:var(--red);color:var(--text);background:var(--red-dim)}
+.btn-lg{padding:14px 32px;font-size:.975rem;border-radius:11px}
+.btn-sm{padding:7px 14px;font-size:.8rem;border-radius:7px}
+
+/* ── HERO ── */
+.hero{
+  padding:110px 28px 80px;
+  text-align:center;
+  position:relative;
+}
+
+/* Grid lines */
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(227,27,35,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(227,27,35,0.04) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 30%, black 0%, transparent 75%);
+  pointer-events:none;
+}
+
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red-dim);
+  border:1px solid var(--border-2);
+  border-radius:99px;
+  padding:5px 14px;
+  font-size:.75rem;font-weight:600;
+  color:rgba(227,27,35,.9);
+  letter-spacing:.07em;text-transform:uppercase;
+  margin-bottom:28px;
+  animation:fadeDown .6s var(--ease) both;
+}
+.badge-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--red);
+  animation:pulse-dot 2s ease infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{box-shadow:0 0 0 0 rgba(227,27,35,.5)}
+  50%{box-shadow:0 0 0 5px transparent}
+}
+
+.hero h1{
+  font-family:var(--ff-d);
+  font-size:clamp(2.8rem,7vw,5.2rem);
+  font-weight:800;line-height:1.05;
+  letter-spacing:-0.04em;
+  margin-bottom:24px;
+  animation:fadeUp .7s .1s var(--ease) both;
+}
+.hero h1 .line2{
+  display:block;
+  background:linear-gradient(110deg, #ff4a50 0%, #e31b23 40%, #ff8080 80%, #e31b23 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shimmer 4s linear infinite, fadeUp .7s .2s var(--ease) both;
+}
+@keyframes shimmer{to{background-position:200% center}}
+
+.hero-sub{
+  font-size:1.1rem;color:var(--text-2);
+  max-width:580px;margin:0 auto 40px;line-height:1.72;
+  animation:fadeUp .7s .25s var(--ease) both;
+}
+
+.hero-actions{
+  display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+  margin-bottom:56px;
+  animation:fadeUp .7s .35s var(--ease) both;
+}
+
+/* ── SEARCH ── */
+.search-outer{
+  max-width:660px;margin:0 auto;
+  animation:fadeUp .7s .4s var(--ease) both;
+}
+.search-wrap{
+  display:flex;
+  background:var(--surface2);
+  border:1px solid var(--border-2);
+  border-radius:14px;
+  overflow:hidden;
+  transition:all .25s var(--ease);
+  box-shadow:0 8px 40px rgba(0,0,0,.4),0 0 0 0 var(--red-glow);
+}
+.search-wrap:focus-within{
+  border-color:var(--red);
+  box-shadow:0 8px 40px rgba(0,0,0,.4),0 0 0 3px var(--red-glow);
+}
+.search-wrap input{
+  flex:1;background:none;border:none;outline:none;
+  padding:16px 22px;
+  color:var(--text);font-family:var(--ff-b);font-size:1rem;
+}
+.search-wrap input::placeholder{color:var(--text-4)}
+.search-btn{
+  background:var(--red);border:none;
+  padding:0 28px;
+  color:#fff;font-family:var(--ff-d);font-weight:700;font-size:.9rem;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+}
+.search-btn:hover{background:var(--red-h)}
+
+.search-result{
+  margin-top:14px;padding:15px 20px;
+  border-radius:11px;
+  display:none;
+  animation:fadeUp .3s var(--ease);
+}
+.search-result.show{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.search-result.avail{background:rgba(22,101,52,.15);border:1px solid rgba(22,101,52,.3)}
+.search-result.taken{background:rgba(120,20,20,.15);border:1px solid rgba(120,20,20,.3)}
+
+/* ── MARQUEE TICKER ── */
+.ticker-wrap{
+  overflow:hidden;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:var(--bg2);
+  padding:13px 0;
+  margin:60px 0;
+}
+.ticker{
+  display:flex;gap:0;
+  animation:ticker 30s linear infinite;
+  width:max-content;
+}
+.ticker-item{
+  display:flex;align-items:center;gap:8px;
+  padding:0 32px;
+  font-family:var(--ff-d);font-size:.85rem;font-weight:600;
+  color:var(--text-3);white-space:nowrap;
+}
+.ticker-item span{color:var(--red);font-weight:700}
+.ticker-sep{color:var(--text-4)}
+@keyframes ticker{to{transform:translateX(-50%)}}
+
+/* ── STATS ── */
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--border);border-radius:20px;overflow:hidden;
+  margin:0 0 100px;
+  background:var(--surface);
+  backdrop-filter:blur(10px);
+}
+.stat{
+  padding:36px 28px;
+  text-align:center;
+  position:relative;
+  transition:background .3s;
+}
+.stat::after{
+  content:'';
+  position:absolute;top:20%;right:0;
+  width:1px;height:60%;
+  background:var(--border);
+}
+.stat:last-child::after{display:none}
+.stat:hover{background:var(--red-glow2)}
+.stat-num{
+  font-family:var(--ff-d);font-size:2.6rem;font-weight:800;
+  color:var(--red);display:block;line-height:1;margin-bottom:8px;
+  text-shadow:0 0 30px rgba(227,27,35,.4);
+}
+.stat-label{color:var(--text-3);font-size:.8rem;letter-spacing:.04em}
+
+/* ── SECTION ── */
+.section{padding:90px 0}
+.section-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--red);margin-bottom:14px;
+}
+.section-eyebrow::before{content:'';width:20px;height:1px;background:var(--red)}
+.section-title{
+  font-family:var(--ff-d);
+  font-size:clamp(1.9rem,3.5vw,2.8rem);
+  font-weight:800;letter-spacing:-0.03em;
+  margin-bottom:14px;line-height:1.15;
+}
+.section-sub{color:var(--text-2);font-size:.975rem;line-height:1.72;max-width:520px}
+
+/* ── PRICING ── */
+.pricing-section{
+  background:linear-gradient(180deg,transparent 0%,rgba(227,27,35,.04) 50%,transparent 100%);
+}
+.pricing-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(155px,1fr));
+  gap:10px;margin-top:48px;
+}
+.price-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;padding:20px 16px;
+  text-align:center;
+  transition:all .25s var(--ease);
+  position:relative;overflow:hidden;cursor:default;
+}
+.price-card::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%, rgba(227,27,35,.1) 0%, transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.price-card:hover{
+  border-color:var(--border-3);
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(0,0,0,.4),0 0 0 1px rgba(227,27,35,.15);
+}
+.price-card:hover::before{opacity:1}
+.price-off{
+  position:absolute;top:9px;right:9px;
+  background:var(--red);color:#fff;
+  font-size:.6rem;font-weight:800;
+  padding:2px 7px;border-radius:5px;letter-spacing:.06em;
+}
+.price-ext{
+  font-family:var(--ff-d);font-size:1.25rem;font-weight:800;
+  color:var(--red);margin-bottom:10px;
+}
+.price-yours{font-size:1.45rem;font-weight:700;line-height:1}
+.price-yours sub{font-size:.6em;color:var(--text-2);font-weight:400;vertical-align:baseline}
+.price-market{
+  font-size:.75rem;color:var(--text-4);
+  text-decoration:line-through;margin-top:5px;
+}
+
+/* ── FEATURES ── */
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;margin-top:56px;
+}
+.feat{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;padding:28px;
+  transition:all .25s var(--ease);
+  position:relative;overflow:hidden;
+}
+.feat::after{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--red-dim),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.feat:hover{border-color:var(--border-2);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.feat:hover::after{opacity:1}
+.feat-icon{
+  width:46px;height:46px;
+  background:var(--red-dim);border:1px solid var(--border-2);
+  border-radius:12px;
+  display:grid;place-items:center;
+  color:var(--red);margin-bottom:18px;
+}
+.feat h3{
+  font-family:var(--ff-d);font-size:1rem;font-weight:700;
+  margin-bottom:8px;
+}
+.feat p{color:var(--text-2);font-size:.875rem;line-height:1.7}
+
+/* ── HOW IT WORKS ── */
+.how-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:0;margin-top:60px;
+  position:relative;
+}
+.how-grid::before{
+  content:'';
+  position:absolute;top:36px;left:calc(33.33% - 0px);right:calc(33.33%);
+  height:1px;background:var(--border-2);
+}
+.how-grid::after{
+  content:'';
+  position:absolute;top:36px;left:calc(66.66%);right:0;
+  height:1px;background:var(--border-2);
+}
+.how-step{padding:0 24px;text-align:center}
+.how-num{
+  width:72px;height:72px;
+  border:1px solid var(--border-2);
+  border-radius:50%;
+  display:grid;place-items:center;
+  margin:0 auto 24px;
+  font-family:var(--ff-d);font-size:1.4rem;font-weight:800;color:var(--red);
+  background:var(--bg2);
+  position:relative;z-index:1;
+  box-shadow:0 0 0 6px var(--bg);
+}
+.how-step h3{font-family:var(--ff-d);font-size:1rem;font-weight:700;margin-bottom:8px}
+.how-step p{color:var(--text-2);font-size:.875rem;line-height:1.7}
+
+/* ── FAQ ── */
+.faq-list{max-width:760px;margin:48px auto 0}
+.faq{
+  border:1px solid var(--border);border-radius:13px;
+  margin-bottom:8px;overflow:hidden;
+  transition:border-color .2s;
+}
+.faq:hover{border-color:var(--border-2)}
+.faq-q{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:18px 22px;background:var(--surface);
+  border:none;color:var(--text);
+  font-family:var(--ff-d);font-size:.975rem;font-weight:600;
+  cursor:pointer;text-align:left;gap:16px;
+  transition:background .2s;
+}
+.faq-q:hover{background:var(--surface2)}
+.faq-chevron{
+  flex-shrink:0;color:var(--red);
+  transition:transform .3s var(--ease);
+  width:18px;height:18px;
+}
+.faq.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{
+  max-height:0;overflow:hidden;
+  transition:max-height .35s var(--ease);
+  background:var(--bg3);
+}
+.faq.open .faq-a{max-height:200px}
+.faq-a p{
+  padding:16px 22px;
+  color:var(--text-2);font-size:.9rem;line-height:1.75;
+}
+
+/* ── DISCORD CTA ── */
+.discord-cta{
+  background:linear-gradient(135deg,rgba(88,101,242,.12),rgba(88,101,242,.04));
+  border:1px solid rgba(88,101,242,.25);
+  border-radius:22px;padding:52px;text-align:center;
+  margin:0 0 100px;
+  position:relative;overflow:hidden;
+}
+.discord-cta::before{
+  content:'';
+  position:absolute;top:-80px;left:50%;transform:translateX(-50%);
+  width:300px;height:200px;
+  background:radial-gradient(ellipse,rgba(88,101,242,.1) 0%,transparent 70%);
+  pointer-events:none;
+}
+.discord-logo{
+  width:52px;height:52px;margin:0 auto 18px;display:block;
+}
+.discord-cta h2{
+  font-family:var(--ff-d);font-size:1.9rem;font-weight:800;
+  letter-spacing:-0.03em;margin-bottom:10px;
+}
+.discord-cta p{color:var(--text-2);margin-bottom:28px;font-size:.975rem}
+.btn-discord{
+  background:#5865F2;color:#fff;
+  box-shadow:0 4px 20px rgba(88,101,242,.4);
+}
+.btn-discord:hover{background:#4752C4;color:#fff;transform:translateY(-1px)}
+
+/* ── TRUST BANNER ── */
+.trust{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:var(--bg2);
+  padding:28px;
+  text-align:center;
+  margin-bottom:100px;
+}
+.trust-inner{
+  max-width:800px;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+  gap:48px;flex-wrap:wrap;
+}
+.trust-item{
+  display:flex;align-items:center;gap:10px;
+  color:var(--text-3);font-size:.85rem;font-weight:500;
+}
+.trust-item svg{color:var(--red);flex-shrink:0}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:60px 28px 36px;
+}
+.footer-grid{
+  max-width:1180px;margin:0 auto;
+  display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr;
+  gap:56px;margin-bottom:48px;
+}
+.footer-brand .logo{margin-bottom:14px}
+.footer-brand p{color:var(--text-3);font-size:.85rem;line-height:1.65;max-width:240px}
+.footer-col h4{
+  font-family:var(--ff-d);font-size:.75rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:16px;
+}
+.footer-col ul{list-style:none}
+.footer-col li{margin-bottom:9px}
+.footer-col a{color:var(--text-3);font-size:.875rem;transition:color .2s}
+.footer-col a:hover{color:var(--text)}
+.footer-bottom{
+  max-width:1180px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:24px;border-top:1px solid var(--border);
+  color:var(--text-4);font-size:.78rem;flex-wrap:wrap;gap:12px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes fadeDown{
+  from{opacity:0;transform:translateY(-12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.reveal{
+  opacity:0;transform:translateY(22px);
+  transition:opacity .65s var(--ease), transform .65s var(--ease);
+}
+.reveal.visible{opacity:1;transform:none}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  .features-grid,.how-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .how-grid::before,.how-grid::after{display:none}
+  .how-step{margin-bottom:36px}
+  .nav-links{display:none}
+}
+@media(max-width:600px){
+  .stats{grid-template-columns:1fr 1fr}
+  .stat{padding:24px 16px}
+  .stat-num{font-size:1.8rem}
+  .footer-grid{grid-template-columns:1fr;gap:32px}
+  .discord-cta{padding:36px 24px}
+  .section{padding:60px 0}
+  .hero{padding:72px 20px 56px}
+  .pricing-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .trust-inner{gap:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-mark">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+          <path d="M9 1L17 5V13L9 17L1 13V5L9 1Z" fill="white" opacity="0.95"/>
+          <path d="M9 5.5L13.5 7.75V12.25L9 14.5L4.5 12.25V7.75L9 5.5Z" fill="white" opacity="0.35"/>
+        </svg>
+      </div>
+      Rexi<em>ra</em>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#">Docs</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost btn-sm">Sign In</a>
+      <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-primary btn-sm">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Buy Domain
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="container">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      55% off all domains — enterprise grade
+    </div>
+    <h1>
+      Domains at prices<br>
+      <span class="line2">nobody can match.</span>
+    </h1>
+    <p class="hero-sub">Enterprise domain management with free WHOIS privacy, Cloudflare DDoS protection, and 500+ extensions — at 55% below market rate.</p>
+    <div class="hero-actions">
+      <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-primary btn-lg">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Buy on Discord
+      </a>
+      <a href="#pricing" class="btn btn-outline btn-lg">View Pricing →</a>
+    </div>
+
+    <!-- Search -->
+    <div class="search-outer">
+      <form class="search-wrap" id="search-form" onsubmit="checkDomain(event)">
+        <input type="text" id="domain-input" placeholder="Search any domain… e.g. mybrand.gg" autocomplete="off" spellcheck="false">
+        <button type="submit" class="search-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Check
+        </button>
+      </form>
+      <div id="search-result" class="search-result"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <!-- doubled for seamless loop -->
+    <div class="ticker-item"><span>.com</span> from $5.85<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.gg</span> from $22.50<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.io</span> from $18.00<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.net</span> from $5.40<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.org</span> from $4.95<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.co</span> from $6.75<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.xyz</span> from $2.25<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.store</span> from $1.35<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.online</span> from $1.80<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.me</span> from $2.25<span class="ticker-sep">/yr</span></div>
+    <!-- duplicate -->
+    <div class="ticker-item"><span>.com</span> from $5.85<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.gg</span> from $22.50<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.io</span> from $18.00<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.net</span> from $5.40<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.org</span> from $4.95<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.co</span> from $6.75<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.xyz</span> from $2.25<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.store</span> from $1.35<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.online</span> from $1.80<span class="ticker-sep">/yr</span></div>
+    <div class="ticker-item"><span>.me</span> from $2.25<span class="ticker-sep">/yr</span></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="container">
+  <div class="stats reveal">
+    <div class="stat">
+      <span class="stat-num">500+</span>
+      <span class="stat-label">Domain Extensions</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">55%</span>
+      <span class="stat-label">Average Savings</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">Discord Support</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Free WHOIS Privacy</span>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section class="section pricing-section" id="pricing">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">Transparent Pricing</div>
+      <h2 class="section-title">55% Off Every Domain</h2>
+      <p class="section-sub">All prices are per year. WHOIS privacy always included free. 500+ extensions available.</p>
+    </div>
+    <div class="pricing-grid reveal">
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.com</div>
+        <div class="price-yours">$5.85<sub>/yr</sub></div>
+        <div class="price-market">Was $12.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.net</div>
+        <div class="price-yours">$5.40<sub>/yr</sub></div>
+        <div class="price-market">Was $11.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.org</div>
+        <div class="price-yours">$4.95<sub>/yr</sub></div>
+        <div class="price-market">Was $10.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.gg</div>
+        <div class="price-yours">$22.50<sub>/yr</sub></div>
+        <div class="price-market">Was $49.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.io</div>
+        <div class="price-yours">$18.00<sub>/yr</sub></div>
+        <div class="price-market">Was $39.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.co</div>
+        <div class="price-yours">$6.75<sub>/yr</sub></div>
+        <div class="price-market">Was $14.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.us</div>
+        <div class="price-yours">$3.60<sub>/yr</sub></div>
+        <div class="price-market">Was $7.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.ca</div>
+        <div class="price-yours">$4.50<sub>/yr</sub></div>
+        <div class="price-market">Was $9.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.in</div>
+        <div class="price-yours">$3.15<sub>/yr</sub></div>
+        <div class="price-market">Was $6.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.xyz</div>
+        <div class="price-yours">$2.25<sub>/yr</sub></div>
+        <div class="price-market">Was $4.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.info</div>
+        <div class="price-yours">$2.70<sub>/yr</sub></div>
+        <div class="price-market">Was $5.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.biz</div>
+        <div class="price-yours">$4.05<sub>/yr</sub></div>
+        <div class="price-market">Was $8.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.online</div>
+        <div class="price-yours">$1.80<sub>/yr</sub></div>
+        <div class="price-market">Was $3.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.store</div>
+        <div class="price-yours">$1.35<sub>/yr</sub></div>
+        <div class="price-market">Was $2.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.me</div>
+        <div class="price-yours">$2.25<sub>/yr</sub></div>
+        <div class="price-market">Was $4.99</div>
+      </div>
+      <div class="price-card">
+        <span class="price-off">55% OFF</span>
+        <div class="price-ext">.co.uk</div>
+        <div class="price-yours">$2.70<sub>/yr</sub></div>
+        <div class="price-market">Was $5.99</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:36px" class="reveal">
+      <p style="color:var(--text-3);font-size:.875rem;margin-bottom:20px">Need a TLD not listed? We support 500+ extensions — just ask.</p>
+      <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+        Register via Discord
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features" style="background:linear-gradient(180deg,transparent,rgba(227,27,35,.03),transparent)">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-eyebrow">Platform Features</div>
+      <h2 class="section-title">Everything Included,<br>Nothing Held Back</h2>
+      <p class="section-sub">Features that other registrars charge hundreds for — bundled into every Rexira domain.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat reveal">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>500+ Extensions</h3>
+        <p>From .com to .gg to niche country TLDs — the largest catalog at wholesale reseller prices no competitor matches.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>Free WHOIS Privacy</h3>
+        <p>Your personal data never appears in public WHOIS records. Privacy protection is permanent and included on every domain.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Enterprise DDoS Shield</h3>
+        <p>Cloudflare's global anycast network. Toggle "Under Attack" mode on or off in seconds from your dashboard.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Advanced DNS Control</h3>
+        <p>Full A, AAAA, CNAME, MX, TXT, SRV management. DNS hosted on Cloudflare's infrastructure — sub-second propagation.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Instant Activation</h3>
+        <p>Domain goes live in under 5 minutes after purchase. No waiting periods, no queues, no paperwork.</p>
+      </div>
+      <div class="feat reveal">
+        <div class="feat-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>24/7 Human Support</h3>
+        <p>Real people on Discord around the clock. No bots, no ticket queues — average response under 10 minutes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="container">
+    <div style="text-align:center" class="reveal">
+      <div class="section-eyebrow" style="justify-content:center">Simple Process</div>
+      <h2 class="section-title">Get Your Domain<br>in 3 Steps</h2>
+      <p class="section-sub" style="margin:0 auto">No forms, no waiting. The fastest domain registration experience you've had.</p>
+    </div>
+    <div class="how-grid reveal">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <h3>Search Your Domain</h3>
+        <p>Use the search box above to check availability across all 500+ extensions instantly.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <h3>Order on Discord</h3>
+        <p>Join our server, open a ticket in #buy-domain, and a human will confirm & complete your order.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <h3>Manage Everything</h3>
+        <p>Your domain appears in your dashboard instantly. Toggle DDoS, update DNS, request nameserver changes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<div class="container">
+  <div class="trust reveal">
+    <div class="trust-inner">
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Powered by Cloudflare
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        GDPR Compliant
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Free WHOIS Privacy
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        24/7 Support
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Instant Activation
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DISCORD CTA -->
+<div class="container">
+  <div class="discord-cta reveal">
+    <svg class="discord-logo" viewBox="0 0 24 24" fill="#5865F2">
+      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+    </svg>
+    <h2>Ready to register?</h2>
+    <p>Join thousands of customers getting enterprise domains at 55% off. Our team registers your domain in minutes.</p>
+    <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-discord btn-lg">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+      Join Discord & Buy Now
+    </a>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="container">
+    <div style="text-align:center" class="reveal">
+      <div class="section-eyebrow" style="justify-content:center">FAQ</div>
+      <h2 class="section-title">Common Questions</h2>
+      <p class="section-sub" style="margin:0 auto">Everything you should know before registering a domain.</p>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Do I own the domain after purchasing?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a"><p>Rexira is a domain reseller — you purchase an exclusive operational license. You control everything: DNS, nameservers, and where the domain resolves. However, Rexira remains the legal registrant. This model enables our 55% discount and free WHOIS privacy. If full legal transfer is required, our service isn't the right fit.</p></div>
+      </div>
+      <div class="faq">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do I actually buy a domain?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a"><p>Search for your domain above, then join our Discord and open a ticket in #buy-domain. A team member confirms availability, sends a payment link, and registers the domain — usually within 5 minutes. It then appears in your dashboard automatically.</p></div>
+      </div>
+      <div class="faq">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Are refunds available?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a"><p>No. All domain purchases are final and non-refundable. Domain registrations are an immediate cost to us and cannot be returned to the registry. Please double-check your domain spelling and TLD before completing payment.</p></div>
+      </div>
+      <div class="faq">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I change my nameservers?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a"><p>Yes. Log into your dashboard and submit a nameserver change request with your desired nameservers and a reason. An admin reviews and approves within 24 hours. We support any valid nameserver provider — Cloudflare, Route 53, your own servers, etc.</p></div>
+      </div>
+      <div class="faq">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How does DDoS protection work?
+          <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-a"><p>We use Cloudflare's enterprise network. When enabled, your domain enters "Under Attack" mode — Cloudflare presents a browser challenge to all visitors, blocking DDoS traffic at the edge. You can toggle this on or off instantly from your dashboard with no propagation delay.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="logo">
+        <div class="logo-mark">
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+            <path d="M9 1L17 5V13L9 17L1 13V5L9 1Z" fill="white" opacity="0.95"/>
+            <path d="M9 5.5L13.5 7.75V12.25L9 14.5L4.5 12.25V7.75L9 5.5Z" fill="white" opacity="0.35"/>
+          </svg>
+        </div>
+        Rexi<em>ra</em>
+      </a>
+      <p>Enterprise domain management at prices nobody else can match. Powered by Cloudflare infrastructure.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="#">Dashboard</a></li>
+        <li><a href="#">Documentation</a></li>
+        <li><a href="#">Zero Trust</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="https://discord.gg/zh42gAGmJH" target="_blank">Discord Support</a></li>
+        <li><a href="mailto:info@rexira.gg">info@rexira.gg</a></li>
+        <li><a href="mailto:billing@rexira.gg">billing@rexira.gg</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Rexira. All rights reserved.</span>
+    <span>Reseller model · No refunds · <a href="#" style="color:var(--text-3)">TOS</a> · <a href="#" style="color:var(--text-3)">Privacy</a></span>
+  </div>
+</footer>
+
+<script>
+// ── Pricing data ──
+const PRICING = {
+  '.com':5.85,'.net':5.40,'.org':4.95,'.gg':22.50,'.io':18.00,
+  '.co':6.75,'.us':3.60,'.ca':4.50,'.in':3.15,'.xyz':2.25,
+  '.info':2.70,'.biz':4.05,'.online':1.80,'.store':1.35,
+  '.co.uk':2.70,'.me':2.25
+};
+const MARKET = {
+  '.com':12.99,'.net':11.99,'.org':10.99,'.gg':49.99,'.io':39.99,
+  '.co':14.99,'.us':7.99,'.ca':9.99,'.in':6.99,'.xyz':4.99,
+  '.info':5.99,'.biz':8.99,'.online':3.99,'.store':2.99,
+  '.co.uk':5.99,'.me':4.99
+};
+
+// ── Domain Search ──
+async function checkDomain(e) {
+  e.preventDefault();
+  const input = document.getElementById('domain-input');
+  const resultEl = document.getElementById('search-result');
+  const btn = document.querySelector('.search-btn');
+  const domain = input.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/$/,'');
+  if (!domain) return;
+
+  btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .7s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Checking`;
+  btn.disabled = true;
+  resultEl.className = 'search-result';
+
+  // Get extension price
+  const ext = '.' + domain.split('.').slice(1).join('.');
+  const price = PRICING[ext] || 5.85;
+  const market = MARKET[ext] || 12.99;
+
+  try {
+    // Try DNS lookup as availability proxy
+    const res = await fetch(`https://dns.google/resolve?name=${domain}&type=A`);
+    const data = await res.json();
+    const taken = data.Answer && data.Answer.length > 0;
+
+    if (taken) {
+      resultEl.className = 'search-result taken show';
+      resultEl.innerHTML = `
+        <div>
+          <strong style="color:#f87171;font-family:'Syne',sans-serif">✕ ${domain} appears taken</strong>
+          <div style="color:var(--text-3);font-size:.82rem;margin-top:3px">Try a different name or extension</div>
+        </div>
+        <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-sm btn-outline">Ask on Discord</a>`;
+    } else {
+      resultEl.className = 'search-result avail show';
+      resultEl.innerHTML = `
+        <div>
+          <strong style="color:#4ade80;font-family:'Syne',sans-serif">✓ ${domain} looks available!</strong>
+          <div style="font-size:.82rem;color:var(--text-2);margin-top:3px">
+            <s style="color:var(--text-3)">$${market}</s>
+            → <strong style="color:var(--red)">$${price}/yr</strong>
+            <span style="background:var(--red);color:#fff;padding:1px 6px;border-radius:4px;font-size:.65rem;font-weight:800;margin-left:4px">55% OFF</span>
+          </div>
+        </div>
+        <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-primary btn-sm">Buy on Discord →</a>`;
+    }
+  } catch {
+    resultEl.className = 'search-result show';
+    resultEl.style.background='rgba(30,30,30,.5)';resultEl.style.border='1px solid var(--border)';
+    resultEl.innerHTML = `
+      <span style="color:var(--text-2)">Could not verify availability — ask our team on Discord.</span>
+      <a href="https://discord.gg/zh42gAGmJH" target="_blank" class="btn btn-sm btn-outline">Ask on Discord</a>`;
+  } finally {
+    btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Check`;
+    btn.disabled = false;
+  }
+}
+
+// ── FAQ toggle ──
+function toggleFaq(btn) {
+  const item = btn.closest('.faq');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq.open').forEach(f => f.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// ── Scroll reveal ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, {threshold:.1, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Spin keyframe ──
+const style = document.createElement('style');
+style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>
